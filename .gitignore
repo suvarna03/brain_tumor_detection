@@ -1,0 +1,23 @@
+# Virtual Environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Artifacts
+artifacts/
+
+# Environment variables
+.env
