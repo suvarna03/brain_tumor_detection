@@ -14,3 +14,11 @@
 6. Image format JPEG is same over 4 classes
 7. Images have varying spatial resolutions (e.g., 202×202, 512×512, 1280×1280). Deep learning models require fixed-size tensors. therefore, all images must be resized to a common resolution before training.
 8. Pixel intensities are stored as 8-bit unsigned integers (uint8) ranging from 0 to 255. These values will be normalized to the range [0, 1] before training to improve optimization stability.
+
+**Intensity Analysis Observations**
+1. Glioma images are generally darker than the other three classes
+2. Large intensity variation exists inside each class
+    1. Example : **Meningioma** (Darkest = 18.23, Brightest = 137.76)
+    2. Images belonging to the same class can have very different intensity distributions. The dataset contains both low-contrast and high-contrast MRI scans.
+3. Brightest image belongs to Meningioma and Darkest image belongs to Glioma
+4. Intensity values are not standardized, AS MRI scans are acquired under different imaging conditions, resulting in varying brightness levels across images.
