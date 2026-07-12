@@ -1,0 +1,34 @@
+artifacts_root: artifacts
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+
+  dataset_name: briscdataset/brisc2025
+
+  local_data_file: artifacts/data_ingestion/brisc2025.zip
+
+  unzip_dir: artifacts/data_ingestion
+
+
+data_validation:
+  root_dir: artifacts/data_validation
+
+  status_file: artifacts/data_validation/status.txt
+
+
+model_training:
+  root_dir: artifacts/model_training
+
+  trained_model_path: artifacts/model_training/model.keras
+
+
+feature_extraction:
+  root_dir: artifacts/feature_extraction
+
+  feature_file: artifacts/feature_extraction/features.pkl
+
+
+faiss_index:
+  root_dir: artifacts/faiss_index
+
+  index_file: artifacts/faiss_index/faiss.index

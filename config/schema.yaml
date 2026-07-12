@@ -1,0 +1,18 @@
+expected_num_classes: 4
+
+classes:
+  - glioma
+  - meningioma
+  - pituitary
+  - no_tumor
+
+allowed_formats:
+  - JPEG
+
+allowed_modes:
+  - RGB
+  - L
+
+pixel_range:
+  min: 0
+  max: 255
