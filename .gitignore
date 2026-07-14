@@ -16,6 +16,7 @@ build/
 dist/
 *.egg-info/
 
+
 # Artifacts
 artifacts/
 
@@ -25,3 +26,6 @@ artifacts/
 # testing file
 test.py
 /docs/project_tracker.md
+
+# logs
+logs/

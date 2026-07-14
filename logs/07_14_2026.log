@@ -1,7 +1,0 @@
-2026-07-14 15:20:12,148 | INFO | logger | Logger initialized successfully
-2026-07-14 15:20:15,191 | INFO | common | YAML file loaded successfully from: C:\Projects\brain_tumor_detection\config\config.yaml
-2026-07-14 15:20:15,191 | INFO | common | YAML file loaded successfully from: C:\Projects\brain_tumor_detection\config\params.yaml
-2026-07-14 15:20:15,191 | INFO | common | YAML file loaded successfully from: C:\Projects\brain_tumor_detection\config\schema.yaml
-2026-07-14 15:20:15,191 | INFO | common | Created directory at artifacts
-2026-07-14 15:20:15,191 | INFO | common | Created directory at artifacts\data_validation
-2026-07-14 15:20:16,541 | INFO | data_validation | Data validation completed successfully.
