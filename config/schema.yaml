@@ -1,10 +1,11 @@
 expected_num_classes: 4
 
-classes:
-  - glioma
-  - meningioma
-  - pituitary
-  - no_tumor
+DATA_VALIDATION:
+  CLASSIFICATION_CLASSES:
+    - glioma
+    - meningioma
+    - no_tumor
+    - pituitary
 
 allowed_formats:
   - JPEG

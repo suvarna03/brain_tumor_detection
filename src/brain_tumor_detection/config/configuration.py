@@ -36,12 +36,11 @@ class ConfigurationManager:
 
         data_ingestion = self.config.data_ingestion
 
-        data_ingestion_config = DataIngestionConfig(
+        data_ingestion_config =DataIngestionConfig(
             root_dir=Path(data_ingestion.root_dir),
             dataset_name=data_ingestion.dataset_name,
-            local_data_file=Path(data_ingestion.local_data_file),
-            unzip_dir=Path(data_ingestion.unzip_dir)
-        )
+            dataset_dir=Path(data_ingestion.dataset_dir)
+                )
 
         return data_ingestion_config
     
@@ -51,7 +50,9 @@ class ConfigurationManager:
 
         data_validation_config = DataValidationConfig(
             root_dir=Path(data_validation.root_dir),
-            status_file=Path(data_validation.status_file)
+            status_file=Path(data_validation.status_file),
+            dataset_dir= Path(data_validation.dataset_dir),
+            expected_classes= self.schema.DATA_VALIDATION.CLASSIFICATION_CLASSES    
         )
 
         return data_validation_config

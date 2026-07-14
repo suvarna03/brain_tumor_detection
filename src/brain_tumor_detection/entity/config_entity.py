@@ -6,15 +6,15 @@ from pathlib import Path
 class DataIngestionConfig:
     root_dir: Path
     dataset_name: str
-    local_data_file: Path
-    unzip_dir: Path
+    dataset_dir: Path
 
 
 @dataclass(frozen=True)
 class DataValidationConfig:
     root_dir: Path
     status_file: Path
-
+    dataset_dir: Path
+    expected_classes: list
 
 @dataclass(frozen=True)
 class ModelTrainingConfig:
