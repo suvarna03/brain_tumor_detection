@@ -51,20 +51,41 @@ class ConfigurationManager:
         data_validation_config = DataValidationConfig(
             root_dir=Path(data_validation.root_dir),
             status_file=Path(data_validation.status_file),
-            dataset_dir= Path(data_validation.dataset_dir),
-            expected_classes= self.schema.DATA_VALIDATION.CLASSIFICATION_CLASSES    
-        )
+            dataset_dir=Path(data_validation.dataset_dir),
+
+            expected_classes=self.schema.DATA_VALIDATION.CLASSIFICATION_CLASSES,
+            expected_num_classes=self.schema.expected_num_classes,
+
+            allowed_formats=self.schema.allowed_formats,
+            allowed_modes=self.schema.allowed_modes,
+
+            pixel_min=self.schema.pixel_range.min,
+            pixel_max=self.schema.pixel_range.max
+            )
 
         return data_validation_config
 
     def get_model_training_config(self) -> ModelTrainingConfig:
 
         model_training = self.config.model_training
+        params = self.params
 
         model_training_config = ModelTrainingConfig(
-            root_dir = Path(model_training.root_dir),
-            trained_model_path = Path(model_training.trained_model_path)
-        )
+
+            root_dir=Path(model_training.root_dir),
+            trained_model_path=Path(model_training.trained_model_path),
+            image_size=tuple(params.IMAGE_SIZE),
+            batch_size=params.BATCH_SIZE,
+            epochs=params.EPOCHS,
+            learning_rate=params.LEARNING_RATE,
+            model_name=params.MODEL_NAME,
+            include_top=params.INCLUDE_TOP,
+            weights=params.WEIGHTS,
+            classes=params.CLASSES,
+            color_mode=params.COLOR_MODE,
+            normalize=params.NORMALIZE
+          )
+
         return model_training_config
     
     def get_feature_extraction_config(self) -> FeatureExtractionConfig:
