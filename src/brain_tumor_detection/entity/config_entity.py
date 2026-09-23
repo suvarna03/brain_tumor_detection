@@ -41,6 +41,14 @@ class ModelTrainingConfig:
     color_mode: str
     normalize: bool
 
+@dataclass(frozen=True)
+class ModelInferenceConfig:
+
+    model_path: Path
+    image_size: tuple
+    classes: int
+    class_names: list
+
 
 @dataclass(frozen=True)
 class FeatureExtractionConfig:

@@ -19,3 +19,12 @@ COLOR_MODE: rgb
 NORMALIZE: True
 
 TOP_K_SIMILAR_IMAGES: 5
+
+model_inference:
+  IMAGE_SIZE: [224, 224]
+  CLASSES: 4
+  CLASS_NAMES:
+    - glioma
+    - meningioma
+    - no_tumor
+    - pituitary

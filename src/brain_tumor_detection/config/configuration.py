@@ -15,9 +15,11 @@ from brain_tumor_detection.entity.config_entity import (
     DataIngestionConfig,
     DataValidationConfig,
     ModelTrainingConfig,
+    ModelInferenceConfig,
     FeatureExtractionConfig,
     FAISSConfig
 )
+
 
 
 class ConfigurationManager:
@@ -87,7 +89,22 @@ class ConfigurationManager:
           )
 
         return model_training_config
-    
+
+    def get_model_inference_config(self) -> ModelInferenceConfig:
+
+        config = self.config.model_inference
+        params = self.params.model_inference
+
+        model_inference_config = ModelInferenceConfig(
+            model_path=Path(config.model_path),
+            image_size=tuple(params.IMAGE_SIZE),
+            classes=params.CLASSES,
+            class_names=list(params.CLASS_NAMES)
+
+            )
+
+        return model_inference_config
+        
     def get_feature_extraction_config(self) -> FeatureExtractionConfig:
 
         feature_extraction = self.config.feature_extraction

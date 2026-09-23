@@ -19,6 +19,8 @@ model_training:
   root_dir: artifacts/model_training
   trained_model_path: artifacts/model_training/model.keras
 
+model_inference:
+  model_path: artifacts/model_trainer/resnet50_finetuned.keras
 
 feature_extraction:
   root_dir: artifacts/feature_extraction
