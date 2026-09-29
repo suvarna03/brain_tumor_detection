@@ -1,3 +1,5 @@
+import sys
+
 from brain_tumor_detection.config.configuration import (
     ConfigurationManager
 )
@@ -9,8 +11,6 @@ from brain_tumor_detection.components.feature_extractor import (
 from brain_tumor_detection.logger import logger
 from brain_tumor_detection.exception import CustomException
 
-import sys
-
 
 class FeatureExtractionTrainingPipeline:
 
@@ -21,41 +21,31 @@ class FeatureExtractionTrainingPipeline:
 
         config = ConfigurationManager()
 
-        feature_extraction_config = (
-            config.get_feature_extraction_config()
-        )
+        feature_extraction_config = (config.get_feature_extraction_config())
 
-        feature_extractor = FeatureExtractor(
-            config=feature_extraction_config
-        )
+        feature_extractor = FeatureExtractor(config=feature_extraction_config)
 
-        image_path = input(
-            "\nEnter the path of the MRI image: "
-        ).strip()
+        feature_data = (feature_extractor.initiate_feature_extraction())
 
-        embedding = (
-            feature_extractor.initiate_feature_extraction(
-                image_path=image_path
-            )
-        )
+        print("\nFeature Extraction Completed")
+
+        print("-----------------------------")
 
         print(
-            "\nFeature Extraction Result"
-        )
+            "Features shape:",
+            feature_data["features"].shape)
 
         print(
-            "-------------------------"
-        )
+            "Labels shape:",
+            feature_data["labels"].shape)
 
         print(
-            "Embedding shape:",
-            embedding.shape
-        )
+            "Image paths:",
+            len(feature_data["image_paths"]))
 
         print(
-            "First 10 embedding values:",
-            embedding[:10]
-        )
+            "Feature file:",
+            feature_extraction_config.feature_file)
 
 
 if __name__ == "__main__":
@@ -63,16 +53,16 @@ if __name__ == "__main__":
     try:
 
         logger.info(
-            ">>>>>> Stage 05 Feature Extraction Started <<<<<<"
-        )
+            ">>>>>> Stage 05 Feature Extraction "
+            "Started <<<<<<")
 
         obj = FeatureExtractionTrainingPipeline()
 
         obj.main()
 
         logger.info(
-            ">>>>>> Stage 05 Feature Extraction Completed <<<<<<\n"
-        )
+            ">>>>>> Stage 05 Feature Extraction "
+            "Completed <<<<<<\n")
 
     except Exception as e:
 

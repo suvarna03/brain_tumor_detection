@@ -17,6 +17,7 @@ from brain_tumor_detection.entity.config_entity import (
     ModelTrainingConfig,
     ModelInferenceConfig,
     FeatureExtractionConfig,
+    PCAConfig,
     FAISSConfig
 )
 
@@ -108,12 +109,39 @@ class ConfigurationManager:
     def get_feature_extraction_config(self) -> FeatureExtractionConfig:
 
         feature_extraction = self.config.feature_extraction
+
+        params = self.params
+
         feature_extraction_config = FeatureExtractionConfig(
-            root_dir = Path(feature_extraction.root_dir),
-            feature_file = Path(feature_extraction.feature_file)
-        )
+            root_dir=Path(feature_extraction.root_dir),
+            feature_file=Path(feature_extraction.feature_file),
+            train_dir=Path(feature_extraction.train_dir),
+            image_size=tuple(params.IMAGE_SIZE),
+            batch_size=params.BATCH_SIZE,
+
+            class_names=[
+                "glioma",
+                "meningioma",
+                "no_tumor",
+                "pituitary"]
+            )
 
         return feature_extraction_config
+
+
+    def get_pca_config(self) -> PCAConfig:
+
+        pca = self.config.pca
+
+        pca_config = PCAConfig(
+
+            root_dir=Path(pca.root_dir),
+            input_feature_file=Path(pca.input_feature_file),
+            pca_model_file=Path(pca.pca_model_file),
+            reduced_feature_file=Path(pca.reduced_feature_file),
+            n_components=self.params.PCA_COMPONENTS)
+
+        return pca_config
     
     def get_faiss_config(self) -> FAISSConfig:
         

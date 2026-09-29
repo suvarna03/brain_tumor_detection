@@ -52,8 +52,22 @@ class ModelInferenceConfig:
 
 @dataclass(frozen=True)
 class FeatureExtractionConfig:
+
     root_dir: Path
     feature_file: Path
+    train_dir: Path
+    image_size: tuple
+    batch_size: int
+    class_names: list
+
+
+@dataclass(frozen=True)
+class PCAConfig:
+    root_dir: Path
+    input_feature_file: Path
+    pca_model_file: Path
+    reduced_feature_file: Path
+    n_components: int
 
 
 @dataclass(frozen=True)

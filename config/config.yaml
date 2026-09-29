@@ -25,6 +25,13 @@ model_inference:
 feature_extraction:
   root_dir: artifacts/feature_extraction
   feature_file: artifacts/feature_extraction/features.pkl
+  train_dir: artifacts/data_ingestion/brisc2025/brisc2025/classification_task/train
+
+pca:
+  root_dir: artifacts/pca
+  input_feature_file: artifacts/feature_extraction/features.pkl
+  pca_model_file: artifacts/pca/pca.pkl
+  reduced_feature_file: artifacts/pca/reduced_features.pkl
 
 
 faiss_index:
