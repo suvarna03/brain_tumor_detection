@@ -144,10 +144,14 @@ class ConfigurationManager:
         return pca_config
     
     def get_faiss_config(self) -> FAISSConfig:
-        
-        faiss_section = self.config.faiss_index
-        faiss_index_config = FAISSConfig(
-            root_dir = Path(faiss_section.root_dir),
-            index_file = Path(faiss_section.index_file)
-        )
-        return faiss_index_config
+
+        faiss_index = self.config.faiss_index
+
+        faiss_config = FAISSConfig(
+            root_dir=Path(faiss_index.root_dir),
+            index_file=Path(faiss_index.index_file),
+            reduced_feature_file=Path(faiss_index.reduced_feature_file),
+            metadata_file=Path(faiss_index.metadata_file),
+            top_k=self.params.TOP_K_SIMILAR_IMAGES )
+
+        return faiss_config

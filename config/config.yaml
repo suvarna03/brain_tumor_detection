@@ -37,3 +37,5 @@ pca:
 faiss_index:
   root_dir: artifacts/faiss_index
   index_file: artifacts/faiss_index/faiss.index
+  reduced_feature_file: artifacts/pca/reduced_features.pkl
+  metadata_file: artifacts/faiss_index/metadata.pkl

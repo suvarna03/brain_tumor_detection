@@ -74,3 +74,6 @@ class PCAConfig:
 class FAISSConfig:
     root_dir: Path
     index_file: Path
+    reduced_feature_file: Path
+    metadata_file: Path
+    top_k: int
