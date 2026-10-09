@@ -1,14 +1,12 @@
-from brain_tumor_detection.config.configuration import ConfigurationManager
-from brain_tumor_detection.components.data_validation import DataValidation
-from brain_tumor_detection.logger import logger
-from brain_tumor_detection.exception import CustomException
 import sys
 
+from brain_tumor_detection.components.data_validation import DataValidation
+from brain_tumor_detection.config.configuration import ConfigurationManager
+from brain_tumor_detection.exception import CustomException
+from brain_tumor_detection.logger import logger
 
-class DataValidationTrainingPipeline:
 
-    def __init__(self):
-        pass
+class DataValidationPipeline:
 
     def main(self):
 
@@ -22,19 +20,22 @@ class DataValidationTrainingPipeline:
             config=data_validation_config
         )
 
-        data_validation.initiate_data_validation()
+        status = data_validation.initiate_data_validation()
+
+        if not status:
+            raise RuntimeError(
+                "Data validation failed. Check artifacts/data_validation/status.txt"
+            )
 
 
 if __name__ == "__main__":
 
     try:
-
         logger.info(
             ">>>>>> Stage 02 Data Validation Started <<<<<<"
         )
 
-        obj = DataValidationTrainingPipeline()
-
+        obj = DataValidationPipeline()
         obj.main()
 
         logger.info(

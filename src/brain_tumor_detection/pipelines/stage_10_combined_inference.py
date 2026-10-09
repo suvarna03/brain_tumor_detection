@@ -1,231 +1,125 @@
 from pathlib import Path
 
-import numpy as np
-from PIL import Image
-
-from brain_tumor_detection.config.configuration import (
-    ConfigurationManager
-)
+import tensorflow as tf
 
 from brain_tumor_detection.components.model_inference import (
     ModelInference
 )
-
 from brain_tumor_detection.components.query_feature_extractor import (
     QueryFeatureExtractor
 )
-
-from brain_tumor_detection.components.query_pca import (
-    QueryPCA
-)
-
+from brain_tumor_detection.components.query_pca import QueryPCA
 from brain_tumor_detection.components.similarity_search import (
     SimilaritySearch
 )
+from brain_tumor_detection.config.configuration import ConfigurationManager
 
 
-class CombinedInferencePipeline:
+class Stage10CombinedInference:
 
     def main(self):
 
         print("Stage 10 Combined Inference Started")
 
-        config_manager = (ConfigurationManager())
+        config_manager = ConfigurationManager()
 
-        model_config = (
-            config_manager.get_model_inference_config()
-            )
+        model_config = config_manager.get_model_inference_config()
+        faiss_config = config_manager.get_faiss_config()
 
-        faiss_config = (
-            config_manager.get_faiss_config()
-            )
+        pca_path = Path("artifacts/pca/pca.pkl")
 
         query_image = Path(
-            input("\nEnter the path of the MRI image: ").strip())
+            input("Enter MRI image path: ").strip()
+        )
 
         if not query_image.exists():
+            print(f"Image not found: {query_image}")
+            return
 
-            raise FileNotFoundError(
-                f"Query image not found: "
-                f"{query_image}"
-            )
+        model_inference = ModelInference(
+            model_config
+        )
 
-        print(
-            "\nQuery image:",
-            query_image)
+        query_feature_extractor = QueryFeatureExtractor(
+            model_config
+        )
 
-        
-        ### PART 1 — CLASSIFICATION
-       
+        query_pca = QueryPCA(pca_path)
 
-        print("\nRunning model inference...")
-
-        model_inference = (ModelInference(config=model_config))
+        similarity_search = SimilaritySearch(
+            faiss_config
+        )
 
         classification_result = (
             model_inference.initiate_model_inference(
-                image_path=query_image)
-            )
-        
-        ### PART 2 — LOAD QUERY IMAGE
-        
-        image = (
-            Image.open(query_image).convert("RGB")
-            )
-
-        image = image.resize(tuple(model_config.image_size))
-
-        image_array = np.asarray(
-            image,
-            dtype=np.float32)
-
-        image_array = np.expand_dims(
-            image_array,
-            axis=0)
-
-        print(
-            "Query image shape:",
-            image_array.shape
-        )
-
-      
-    ### PART 3 — FEATURE EXTRACTION
-       
-
-        print("\nExtracting query features...")
-
-        query_feature_extractor = (
-            QueryFeatureExtractor(config=model_config)
-        )
-
-        query_features = (query_feature_extractor.extract(image_array)
-        )
-
-        print(
-            "Query feature shape:",
-            query_features.shape
-        )
-
-       
-        ### PART 4 — PCA
-        
-
-        print(
-            "\nApplying saved PCA..."
-        )
-
-        query_pca = QueryPCA(
-            pca_path=Path(
-                "artifacts/pca/pca.pkl"
+                query_image
             )
         )
 
-        reduced_query = (
-            query_pca.transform(
-                query_features
-            )
+        print("\nClassification Result")
+        print("---------------------")
+
+        print(
+            f"Predicted class: "
+            f"{classification_result['predicted_class']}"
         )
 
         print(
-            "Reduced query shape:",
-            reduced_query.shape
+            f"Confidence: "
+            f"{classification_result['confidence']:.4f}"
         )
 
-        ### PART 5 — FAISS SEARCH
-        
+        print("\nClass probabilities:")
 
-        print("\nSearching similar images...")
-
-        similarity_search = (SimilaritySearch(
-                config=faiss_config)
-        )
-
-        similarity_results = (
-            similarity_search.search(
-                query_embedding=reduced_query,
-                top_k=faiss_config.top_k
-            )
-        )
-
-        
-        ### FINAL RESULT
-      
-
-        final_result = {
-
-            "classification":
-                classification_result,
-
-            "similar_images":
-                similarity_results
-        }
-
-        ### DISPLAY CLASSIFICATION
-        
-
-        print("\n================================")
-
-        print("CLASSIFICATION RESULT")
-
-        print("================================")
-
-        print(
-            "Predicted class:",
-            classification_result["predicted_class"]
-        )
-
-        print(
-            "Confidence:",
-            f"{classification_result['confidence'] * 100:.2f}%"
-        )
-
-        print(
-            "\nClass probabilities:"
-        )
-
-        for (
-            class_name,
-            probability
-        ) in classification_result[
-            "probabilities"
-        ].items():
-
+        for class_name, probability in (
+            classification_result["class_probabilities"].items()
+        ):
             print(
-                f"{class_name}: "
-                f"{probability * 100:.2f}%"
+                f"{class_name}: {probability:.4f}"
             )
 
-        
-        #### DISPLAY SIMILAR IMAGES
-      
-        print("\n================================")
+        image = tf.keras.utils.load_img(
+            query_image,
+            target_size=model_config.image_size,
+            color_mode="rgb"
+        )
 
-        print("SIMILAR REFERENCE IMAGES")
+        image_array = tf.keras.utils.img_to_array(image)
+        image_array = image_array[None, ...]
 
-        print("================================")
+        query_features = query_feature_extractor.extract(
+            image_array
+        )
+
+        reduced_features = query_pca.transform(
+            query_features
+        )
+
+        similarity_results = similarity_search.search(
+            query_embedding=reduced_features,
+            top_k=faiss_config.top_k
+        )
+
+        print("\nSimilar Images")
+        print("--------------")
 
         for result in similarity_results:
 
+            label = model_config.class_names[
+                result["label"]
+            ]
+
             print(
-                f"Rank: "
-                f"{result['rank']} | "
+                f"Rank: {result['rank']} | "
+                f"Label: {label} | "
                 f"Similarity: "
                 f"{result['similarity_score']:.4f} | "
-                f"Label: "
-                f"{result['label']} | "
-                f"Path: "
-                f"{result['image_path']}"
+                f"Image: {result['image_path']}"
             )
 
         print("\nStage 10 Combined Inference Completed")
 
-        return final_result
-
 
 if __name__ == "__main__":
-
-    stage = (
-        CombinedInferencePipeline()
-    )
-
+    stage = Stage10CombinedInference()
     stage.main()

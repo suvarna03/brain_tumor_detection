@@ -1,10 +1,5 @@
-from brain_tumor_detection.config.configuration import (
-    ConfigurationManager
-)
-
-from brain_tumor_detection.components.model_trainer import (
-    ModelTrainer
-)
+from brain_tumor_detection.components.model_trainer import ModelTrainer
+from brain_tumor_detection.config.configuration import ConfigurationManager
 
 
 class ModelTrainingPipeline:
@@ -27,5 +22,4 @@ class ModelTrainingPipeline:
 if __name__ == "__main__":
 
     obj = ModelTrainingPipeline()
-
     obj.main()

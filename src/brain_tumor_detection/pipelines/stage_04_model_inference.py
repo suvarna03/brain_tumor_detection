@@ -1,14 +1,10 @@
-from brain_tumor_detection.config.configuration import (
-    ConfigurationManager
-)
-
-from brain_tumor_detection.components.model_inference import (
-    ModelInference
-)
-
-from brain_tumor_detection.logger import logger
-from brain_tumor_detection.exception import CustomException
 import sys
+
+from brain_tumor_detection.components.model_inference import ModelInference
+from brain_tumor_detection.config.configuration import ConfigurationManager
+from brain_tumor_detection.exception import CustomException
+from brain_tumor_detection.logger import logger
+from pathlib import Path
 
 
 class ModelInferencePipeline:
@@ -25,9 +21,10 @@ class ModelInferencePipeline:
             config=model_inference_config
         )
 
-        image_path = input(
+        image_path = Path(
+            input(
             "\nEnter the path of the MRI image: "
-        ).strip()
+        ).strip())
 
         model_inference.initiate_model_inference(
             image_path=image_path
@@ -37,13 +34,11 @@ class ModelInferencePipeline:
 if __name__ == "__main__":
 
     try:
-
         logger.info(
             ">>>>>> Stage 04 Model Inference Started <<<<<<"
         )
 
         obj = ModelInferencePipeline()
-
         obj.main()
 
         logger.info(

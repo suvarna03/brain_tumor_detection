@@ -1,10 +1,7 @@
-from brain_tumor_detection.config.configuration import (
-    ConfigurationManager
-)
-
 from brain_tumor_detection.components.similarity_search import (
     SimilaritySearch
 )
+from brain_tumor_detection.config.configuration import ConfigurationManager
 
 
 class Stage07SimilaritySearch:
@@ -15,9 +12,7 @@ class Stage07SimilaritySearch:
 
         config_manager = ConfigurationManager()
 
-        faiss_config = (
-            config_manager.get_faiss_config()
-        )
+        faiss_config = config_manager.get_faiss_config()
 
         similarity_search = SimilaritySearch(
             config=faiss_config
@@ -29,7 +24,5 @@ class Stage07SimilaritySearch:
 
 
 if __name__ == "__main__":
-
     stage = Stage07SimilaritySearch()
-
     stage.main()

@@ -52,10 +52,10 @@ class ModelInferenceConfig:
 
 @dataclass(frozen=True)
 class FeatureExtractionConfig:
-
     root_dir: Path
     feature_file: Path
     train_dir: Path
+    model_path: Path
     image_size: tuple
     batch_size: int
     class_names: list

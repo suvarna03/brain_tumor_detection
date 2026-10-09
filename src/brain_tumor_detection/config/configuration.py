@@ -116,6 +116,7 @@ class ConfigurationManager:
             root_dir=Path(feature_extraction.root_dir),
             feature_file=Path(feature_extraction.feature_file),
             train_dir=Path(feature_extraction.train_dir),
+            model_path=Path(feature_extraction.model_path),
             image_size=tuple(params.IMAGE_SIZE),
             batch_size=params.BATCH_SIZE,
 

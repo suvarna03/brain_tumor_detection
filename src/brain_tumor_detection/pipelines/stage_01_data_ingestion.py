@@ -1,14 +1,12 @@
-from brain_tumor_detection.config.configuration import ConfigurationManager
-from brain_tumor_detection.components.data_ingestion import DataIngestion
-from brain_tumor_detection.logger import logger
-from brain_tumor_detection.exception import CustomException
 import sys
 
+from brain_tumor_detection.components.data_ingestion import DataIngestion
+from brain_tumor_detection.config.configuration import ConfigurationManager
+from brain_tumor_detection.exception import CustomException
+from brain_tumor_detection.logger import logger
 
-class DataIngestionTrainingPipeline:
 
-    def __init__(self):
-        pass
+class DataIngestionPipeline:
 
     def main(self):
 
@@ -28,13 +26,11 @@ class DataIngestionTrainingPipeline:
 if __name__ == "__main__":
 
     try:
-
         logger.info(
             ">>>>>> Stage 01 Data Ingestion Started <<<<<<"
         )
 
-        obj = DataIngestionTrainingPipeline()
-
+        obj = DataIngestionPipeline()
         obj.main()
 
         logger.info(
