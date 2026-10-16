@@ -168,10 +168,14 @@ class DataValidation:
 
                             image_array = np.array(image)
 
+                            if image_array.size == 0:
+                                invalid_files.append(
+                                    f"{image_file} -> Empty image array")
+                                continue
+
                             if (
                                 image_array.min() < self.config.pixel_min
-                                or image_array.max() > self.config.pixel_max
-                            ):
+                                or image_array.max() > self.config.pixel_max):
                                 invalid_files.append(
                                     f"{image_file} -> "
                                     f"Pixel range: "

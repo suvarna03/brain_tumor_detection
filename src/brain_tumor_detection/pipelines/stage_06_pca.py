@@ -24,7 +24,7 @@ class PCATrainingPipeline:
         print("-----------------------------")
 
         print(
-            "Original feature shape:",
+            "Original feature count:",
             pca_data["pca"].n_features_in_
         )
 

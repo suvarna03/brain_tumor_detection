@@ -1,4 +1,5 @@
-from pathlib import Path
+
+import sys
 
 from brain_tumor_detection.components.query_feature_extractor import (
     QueryFeatureExtractor
@@ -11,27 +12,25 @@ from brain_tumor_detection.components.similarity_search import (
     SimilaritySearch
 )
 from brain_tumor_detection.config.configuration import ConfigurationManager
+from brain_tumor_detection.exception import CustomException
+from brain_tumor_detection.logger import logger
 
 
 class Stage09RetrievalEvaluation:
 
     def main(self):
 
-        print("Stage 09 Retrieval Evaluation Started")
-
         config_manager = ConfigurationManager()
 
         model_config = config_manager.get_model_inference_config()
         faiss_config = config_manager.get_faiss_config()
+        pca_config = config_manager.get_pca_config()
+        validation_config = config_manager.get_data_validation_config()
 
-        test_dir = Path(
-            "artifacts/data_ingestion/"
-            "brisc2025/brisc2025/"
-            "classification_task/test"
-        )
-
-        pca_path = Path(
-            "artifacts/pca/pca.pkl"
+        test_dir = (
+            validation_config.dataset_dir
+            / "classification_task"
+            / "test"
         )
 
         query_feature_extractor = QueryFeatureExtractor(
@@ -39,7 +38,7 @@ class Stage09RetrievalEvaluation:
         )
 
         query_pca = QueryPCA(
-            pca_path
+            pca_config.pca_model_file
         )
 
         similarity_search = SimilaritySearch(
@@ -54,7 +53,7 @@ class Stage09RetrievalEvaluation:
             class_names=model_config.class_names,
             test_dir=test_dir,
             samples_per_class=20,
-            top_k=5,
+            top_k=faiss_config.top_k,
             random_seed=42
         )
 
@@ -62,9 +61,21 @@ class Stage09RetrievalEvaluation:
 
         evaluator.summarize(results)
 
-        print("\nStage 09 Retrieval Evaluation Completed")
-
 
 if __name__ == "__main__":
-    stage = Stage09RetrievalEvaluation()
-    stage.main()
+
+    try:
+        logger.info(
+            ">>>>>> Stage 09 Retrieval Evaluation Started <<<<<<"
+        )
+
+        stage = Stage09RetrievalEvaluation()
+        stage.main()
+
+        logger.info(
+            ">>>>>> Stage 09 Retrieval Evaluation Completed <<<<<<"
+        )
+
+    except Exception as e:
+        logger.exception(e)
+        raise CustomException(e, sys)

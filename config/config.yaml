@@ -9,13 +9,10 @@ data_validation:
   root_dir: artifacts/data_validation
   status_file: artifacts/data_validation/status.txt
   dataset_dir: artifacts/data_ingestion/brisc2025/brisc2025
-  classification_dir: artifacts/data_ingestion/brisc2025/brisc2025/classification_task
-  classification_train_dir: artifacts/data_ingestion/brisc2025/brisc2025/classification_task/train
-  classification_test_dir: artifacts/data_ingestion/brisc2025/brisc2025/classification_task/test
 
 model_training:
   root_dir: artifacts/model_trainer
-  trained_model_path: artifacts/model_trainer/resnet50_finetuned.keras
+  trained_model_path: artifacts/model_trainer/resnet50_candidate.keras
 
 model_inference:
   model_path: artifacts/model_trainer/resnet50_finetuned.keras

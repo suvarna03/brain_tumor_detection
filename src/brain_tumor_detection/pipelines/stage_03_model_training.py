@@ -1,3 +1,4 @@
+
 from brain_tumor_detection.components.model_trainer import ModelTrainer
 from brain_tumor_detection.config.configuration import ConfigurationManager
 
@@ -17,6 +18,7 @@ class ModelTrainingPipeline:
         )
 
         model_trainer.display_config()
+        model_trainer.train()
 
 
 if __name__ == "__main__":

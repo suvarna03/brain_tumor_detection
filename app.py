@@ -1,10 +1,12 @@
+import os
 import requests
 import streamlit as st
+from pathlib import Path
 
 from brain_tumor_detection.components.report_generator import ReportGenerator
 
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 MAX_SIMILAR_IMAGES = 3
 
 MAIN_IMAGE_WIDTH = 400
@@ -362,6 +364,35 @@ st.html(
     """
 )
 
+# Sample MRI downloads for visitors to test the demo
+st.markdown("### 📥 Download Sample MRI Images")
+st.write(
+    "New to the demo? Download a sample MRI image below, "
+    "then upload it to test the model."
+)
+
+sample_dir = Path(__file__).parent / "sample_images"
+sample_images = [
+    ("Glioma", "glioma.jpg"),
+    ("Meningioma", "meningioma.jpg"),
+    ("No Tumor", "no_tumor.jpg"),
+    ("Pituitary", "pituitary.jpg"),
+]
+sample_columns = st.columns(4)
+
+for column, (label, filename) in zip(sample_columns, sample_images):
+    image_path = sample_dir / filename
+
+    with column:
+        if image_path.is_file():
+            with open(image_path, "rb") as image_file:
+                st.download_button(
+                    label=f"Download {label}",
+                    data=image_file.read(),
+                    file_name=filename,
+                    mime="image/jpeg",
+                    use_container_width=True,
+                )
 
 try:
     health_response = requests.get(

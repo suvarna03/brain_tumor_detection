@@ -1,3 +1,5 @@
+
+import sys
 from pathlib import Path
 
 import tensorflow as tf
@@ -13,28 +15,28 @@ from brain_tumor_detection.components.similarity_search import (
     SimilaritySearch
 )
 from brain_tumor_detection.config.configuration import ConfigurationManager
+from brain_tumor_detection.exception import CustomException
+from brain_tumor_detection.logger import logger
 
 
 class Stage10CombinedInference:
 
     def main(self):
 
-        print("Stage 10 Combined Inference Started")
-
         config_manager = ConfigurationManager()
 
         model_config = config_manager.get_model_inference_config()
         faiss_config = config_manager.get_faiss_config()
-
-        pca_path = Path("artifacts/pca/pca.pkl")
+        pca_config = config_manager.get_pca_config()
 
         query_image = Path(
             input("Enter MRI image path: ").strip()
         )
 
-        if not query_image.exists():
-            print(f"Image not found: {query_image}")
-            return
+        if not query_image.is_file():
+            raise FileNotFoundError(
+                f"Query image not found: {query_image}"
+            )
 
         model_inference = ModelInference(
             model_config
@@ -44,7 +46,9 @@ class Stage10CombinedInference:
             model_config
         )
 
-        query_pca = QueryPCA(pca_path)
+        query_pca = QueryPCA(
+            pca_config.pca_model_file
+        )
 
         similarity_search = SimilaritySearch(
             faiss_config
@@ -100,14 +104,27 @@ class Stage10CombinedInference:
             top_k=faiss_config.top_k
         )
 
+        if not similarity_results:
+            raise ValueError(
+                "No similar images were returned."
+            )
+
         print("\nSimilar Images")
         print("--------------")
 
         for result in similarity_results:
 
-            label = model_config.class_names[
-                result["label"]
-            ]
+            label_id = result["label"]
+
+            if (
+                label_id < 0
+                or label_id >= len(model_config.class_names)
+            ):
+                raise ValueError(
+                    f"Invalid class label returned: {label_id}"
+                )
+
+            label = model_config.class_names[label_id]
 
             print(
                 f"Rank: {result['rank']} | "
@@ -117,9 +134,21 @@ class Stage10CombinedInference:
                 f"Image: {result['image_path']}"
             )
 
-        print("\nStage 10 Combined Inference Completed")
-
 
 if __name__ == "__main__":
-    stage = Stage10CombinedInference()
-    stage.main()
+
+    try:
+        logger.info(
+            ">>>>>> Stage 10 Combined Inference Started <<<<<<"
+        )
+
+        stage = Stage10CombinedInference()
+        stage.main()
+
+        logger.info(
+            ">>>>>> Stage 10 Combined Inference Completed <<<<<<"
+        )
+
+    except Exception as e:
+        logger.exception(e)
+        raise CustomException(e, sys)

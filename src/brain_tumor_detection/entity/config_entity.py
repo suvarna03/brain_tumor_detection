@@ -28,6 +28,8 @@ class DataValidationConfig:
 class ModelTrainingConfig:
     root_dir: Path
     trained_model_path: Path
+    train_dir: Path
+    class_names: list
 
     image_size: tuple
     batch_size: int

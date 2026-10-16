@@ -1,6 +1,8 @@
+
 import pickle
 import sys
 
+import numpy as np
 from sklearn.decomposition import PCA
 
 from brain_tumor_detection.entity.config_entity import PCAConfig
@@ -39,9 +41,33 @@ class PCATransformer:
             ) as file:
                 feature_data = pickle.load(file)
 
-            features = feature_data["features"]
-            labels = feature_data["labels"]
-            image_paths = feature_data["image_paths"]
+            features = np.asarray(
+                feature_data["features"],
+                dtype=np.float32
+            )
+            labels = np.asarray(feature_data["labels"])
+            image_paths = np.asarray(
+                feature_data["image_paths"]
+            )
+
+            if features.ndim != 2 or features.shape[0] == 0:
+                raise ValueError(
+                    "Features must be a non-empty 2D array."
+                )
+
+            if not np.isfinite(features).all():
+                raise ValueError(
+                    "Features contain invalid values."
+                )
+
+            if (
+                len(labels) != len(features)
+                or len(image_paths) != len(features)
+            ):
+                raise ValueError(
+                    "Features, labels, and image paths "
+                    "must have equal lengths."
+                )
 
             logger.info(
                 f"Loaded features shape: {features.shape}"
@@ -73,12 +99,44 @@ class PCATransformer:
                 f"{self.config.n_components}"
             )
 
+            if (isinstance(self.config.n_components, bool)
+                or not isinstance(self.config.n_components, (int, np.integer))
+            ):
+                raise ValueError(
+                    "Number of PCA components must be an integer."
+                )
+
+            if self.config.n_components < 1:
+                raise ValueError(
+                    "Number of PCA components must be at least 1."
+                )
+
+            max_components = min(
+                features.shape[0],
+                features.shape[1]
+            )
+
+            if self.config.n_components > max_components:
+                raise ValueError(
+                    f"Requested {self.config.n_components} PCA "
+                    f"components, but the maximum allowed is "
+                    f"{max_components} for input shape {features.shape}."
+                )
+
             pca = PCA(
                 n_components=self.config.n_components,
                 random_state=42
             )
 
             reduced_features = pca.fit_transform(features)
+
+            reduced_features = np.asarray(
+                reduced_features,
+                dtype=np.float32
+            )
+            if not np.isfinite(reduced_features).all():
+                raise ValueError(
+                    "Reduced features contain invalid values.")
 
             logger.info("PCA fitting completed.")
             logger.info(
@@ -104,7 +162,9 @@ class PCATransformer:
                 f"{self.config.pca_model_file}"
             )
 
-            create_directory(self.config.root_dir)
+            create_directory(
+                self.config.pca_model_file.parent
+            )
 
             with open(
                 self.config.pca_model_file,
@@ -139,7 +199,9 @@ class PCATransformer:
                 "image_paths": image_paths
             }
 
-            create_directory(self.config.root_dir)
+            create_directory(
+                self.config.reduced_feature_file.parent
+            )
 
             with open(
                 self.config.reduced_feature_file,

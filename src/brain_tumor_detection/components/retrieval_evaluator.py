@@ -1,3 +1,4 @@
+
 from collections import Counter
 from pathlib import Path
 import sys
@@ -42,6 +43,16 @@ class RetrievalEvaluator:
                 f"Scanning test directory: {self.test_dir}"
             )
 
+            if not self.test_dir.is_dir():
+                raise FileNotFoundError(
+                    f"Test directory not found: {self.test_dir}"
+                )
+
+            if self.samples_per_class < 1:
+                raise ValueError(
+                    "samples_per_class must be at least 1."
+                )
+
             rng = np.random.default_rng(
                 self.random_seed
             )
@@ -52,13 +63,13 @@ class RetrievalEvaluator:
 
                 class_dir = self.test_dir / class_name
 
-                if not class_dir.exists():
+                if not class_dir.is_dir():
                     raise FileNotFoundError(
                         f"Test class directory not found: "
                         f"{class_dir}"
                     )
 
-                image_paths = [
+                image_paths = sorted([
                     path
                     for path in class_dir.iterdir()
                     if (
@@ -66,7 +77,7 @@ class RetrievalEvaluator:
                         and path.suffix.lower()
                         in {".jpg", ".jpeg", ".png"}
                     )
-                ]
+                ])
 
                 if len(image_paths) < self.samples_per_class:
                     raise ValueError(
@@ -74,8 +85,6 @@ class RetrievalEvaluator:
                         f"{len(image_paths)} images. "
                         f"Required: {self.samples_per_class}"
                     )
-
-                image_paths = sorted(image_paths)
 
                 selected_indices = rng.choice(
                     len(image_paths),
@@ -122,6 +131,11 @@ class RetrievalEvaluator:
     def evaluate(self):
 
         try:
+            if self.top_k < 1:
+                raise ValueError(
+                    "top_k must be at least 1."
+                )
+
             selected_images = self._get_test_images()
 
             results = []
@@ -153,10 +167,27 @@ class RetrievalEvaluator:
                     )
                 )
 
+                if not retrieval_results:
+                    raise ValueError(
+                        f"No images retrieved for query: "
+                        f"{image_path}"
+                    )
+
                 retrieved_labels = [
                     result["label"]
                     for result in retrieval_results
                 ]
+
+                if any(
+                    not isinstance(label, (int, np.integer))
+                    or label < 0
+                    or label >= len(self.class_names)
+                    for label in retrieved_labels
+                ):
+                    raise ValueError(
+                        "Retrieved labels do not match "
+                        "the configured classes."
+                    )
 
                 retrieved_class_names = [
                     self.class_names[label]
@@ -179,17 +210,19 @@ class RetrievalEvaluator:
                     label_counts.most_common(1)[0][0]
                 )
 
-                top5_majority_correct = (
+                top_k_majority_correct = (
                     majority_label == true_label
                 )
+
+                retrieved_count = len(retrieval_results)
 
                 correct_retrievals = sum(
                     label == true_label
                     for label in retrieved_labels
                 )
 
-                top5_purity = (
-                    correct_retrievals / self.top_k
+                top_k_purity = (
+                    correct_retrievals / retrieved_count
                 )
 
                 results.append({
@@ -200,13 +233,14 @@ class RetrievalEvaluator:
                         "similarity_score"
                     ],
                     "top1_correct": top1_correct,
-                    "top5_labels": retrieved_class_names,
-                    "top5_majority_label": self.class_names[
+                    "top_k_labels": retrieved_class_names,
+                    "top_k_majority_label": self.class_names[
                         majority_label
                     ],
-                    "top5_majority_correct": top5_majority_correct,
-                    "top5_correct_count": correct_retrievals,
-                    "top5_purity": top5_purity
+                    "top_k_majority_correct": top_k_majority_correct,
+                    "top_k_correct_count": correct_retrievals,
+                    "top_k_purity": top_k_purity,
+                    "retrieved_count": retrieved_count
                 })
 
             return results
@@ -219,18 +253,24 @@ class RetrievalEvaluator:
 
     def summarize(self, results):
 
+        if not results:
+            raise ValueError(
+                "Cannot summarize retrieval evaluation: "
+                "no results found."
+            )
+
         dataframe = pd.DataFrame(results)
 
         top1_accuracy = dataframe[
             "top1_correct"
         ].mean()
 
-        top5_majority_accuracy = dataframe[
-            "top5_majority_correct"
+        top_k_majority_accuracy = dataframe[
+            "top_k_majority_correct"
         ].mean()
 
-        mean_top5_purity = dataframe[
-            "top5_purity"
+        mean_top_k_purity = dataframe[
+            "top_k_purity"
         ].mean()
 
         print("\nRetrieval Evaluation Results")
@@ -251,23 +291,23 @@ class RetrievalEvaluator:
         )
 
         print(
-            f"Top-5 majority accuracy: "
-            f"{top5_majority_accuracy:.4f}"
+            f"Top-{self.top_k} majority accuracy: "
+            f"{top_k_majority_accuracy:.4f}"
         )
 
         print(
-            f"Top-5 majority accuracy (%): "
-            f"{top5_majority_accuracy * 100:.2f}%"
+            f"Top-{self.top_k} majority accuracy (%): "
+            f"{top_k_majority_accuracy * 100:.2f}%"
         )
 
         print(
-            f"Mean Top-5 class purity: "
-            f"{mean_top5_purity:.4f}"
+            f"Mean Top-{self.top_k} class purity: "
+            f"{mean_top_k_purity:.4f}"
         )
 
         print(
-            f"Mean Top-5 class purity (%): "
-            f"{mean_top5_purity * 100:.2f}%"
+            f"Mean Top-{self.top_k} class purity (%): "
+            f"{mean_top_k_purity * 100:.2f}%"
         )
 
         print("\nClass-wise Top-1 Accuracy")

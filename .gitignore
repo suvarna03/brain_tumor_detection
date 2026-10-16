@@ -29,3 +29,10 @@ test.py
 
 # logs
 logs/
+
+# Local diagnostic scripts
+diagnose_models.py
+inspect_artifacts.py
+inspect_features.py
+inspect_retrieval_artifacts.py
+app_backup.py

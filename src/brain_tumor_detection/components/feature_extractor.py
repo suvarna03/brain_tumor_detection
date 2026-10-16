@@ -1,3 +1,4 @@
+
 import pickle
 import sys
 from pathlib import Path
@@ -136,19 +137,27 @@ class FeatureExtractor:
 
                 class_dir = self.config.train_dir / class_name
 
-                if not class_dir.exists():
+                if not class_dir.is_dir():
                     raise FileNotFoundError(
                         f"Class directory not found: {class_dir}"
                     )
 
-                for image_path in sorted(class_dir.iterdir()):
-
+                class_images = [
+                    image_path
+                    for image_path in sorted(class_dir.iterdir())
                     if (
                         image_path.is_file()
                         and image_path.suffix.lower()
                         in allowed_extensions
-                    ):
-                        image_paths.append(image_path)
+                    )
+                ]
+
+                if not class_images:
+                    raise ValueError(
+                        f"No images found in class directory: {class_dir}"
+                    )
+
+                image_paths.extend(class_images)
 
             logger.info(
                 f"Total training images found: {len(image_paths)}"
@@ -179,6 +188,12 @@ class FeatureExtractor:
             all_paths = []
 
             batch_size = self.config.batch_size
+
+            if batch_size < 1:
+                raise ValueError(
+                    "Batch size must be at least 1."
+                )
+
             total_images = len(image_paths)
 
             for start_index in range(
@@ -251,6 +266,19 @@ class FeatureExtractor:
             labels = np.concatenate(all_labels)
             image_paths = np.asarray(all_paths)
 
+            if not np.isfinite(features).all():
+                raise ValueError(
+                    "Extracted features contain invalid values."
+                )
+
+            if not (
+                len(features) == len(labels) == len(image_paths)
+            ):
+                raise ValueError(
+                    "Features, labels, and image paths "
+                    "must have equal lengths."
+                )
+
             logger.info(
                 f"Final feature matrix shape: {features.shape}"
             )
@@ -281,9 +309,14 @@ class FeatureExtractor:
                 f"{self.config.feature_file}"
             )
 
-            create_directory(self.config.root_dir)
+            create_directory(
+                self.config.feature_file.parent
+            )
 
-            with open(self.config.feature_file, "wb") as file:
+            with open(
+                self.config.feature_file,
+                "wb"
+            ) as file:
                 pickle.dump(feature_data, file)
 
             logger.info("Feature data saved successfully.")

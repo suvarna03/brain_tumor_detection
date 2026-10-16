@@ -77,6 +77,8 @@ class ConfigurationManager:
 
             root_dir=Path(model_training.root_dir),
             trained_model_path=Path(model_training.trained_model_path),
+            train_dir=(Path(self.config.data_validation.dataset_dir)/ "classification_task"/ "train"),
+            class_names=list(self.params.model_inference.CLASS_NAMES),
             image_size=tuple(params.IMAGE_SIZE),
             batch_size=params.BATCH_SIZE,
             epochs=params.EPOCHS,
@@ -119,14 +121,8 @@ class ConfigurationManager:
             model_path=Path(feature_extraction.model_path),
             image_size=tuple(params.IMAGE_SIZE),
             batch_size=params.BATCH_SIZE,
-
-            class_names=[
-                "glioma",
-                "meningioma",
-                "no_tumor",
-                "pituitary"]
-            )
-
+            class_names=list(params.model_inference.CLASS_NAMES)
+        )
         return feature_extraction_config
 
 

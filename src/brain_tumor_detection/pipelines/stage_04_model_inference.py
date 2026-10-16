@@ -26,9 +26,18 @@ class ModelInferencePipeline:
             "\nEnter the path of the MRI image: "
         ).strip())
 
-        model_inference.initiate_model_inference(
+        result = model_inference.initiate_model_inference(
             image_path=image_path
         )
+
+        print("\nClassification Result")
+        print("---------------------")
+        print(f"Predicted class: {result['predicted_class']}")
+        print(f"Confidence: {result['confidence']:.4f}")
+
+        print("\nClass probabilities:")
+        for class_name, probability in result["class_probabilities"].items():
+            print(f"{class_name}: {probability:.4f}")
 
 
 if __name__ == "__main__":
