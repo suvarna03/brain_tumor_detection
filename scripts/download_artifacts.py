@@ -29,3 +29,6 @@ for filename, destination in artifacts.items():
 
     destination_path.write_bytes(Path(downloaded_path).read_bytes())
     print(f"Downloaded: {destination}")
+
+Path("artifacts/gradcam").mkdir(parents=True, exist_ok=True)
+print("Created: artifacts/gradcam")
