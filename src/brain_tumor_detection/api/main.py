@@ -13,24 +13,27 @@ app = FastAPI(
     version="1.0.0"
 )
 
+gradcam_dir = Path("artifacts/gradcam")
+gradcam_dir.mkdir(parents=True, exist_ok=True)
+
 app.mount(
     "/gradcam",
-    StaticFiles(directory="artifacts/gradcam"),
+    StaticFiles(directory=str(gradcam_dir)),
     name="gradcam"
 )
 
-app.mount(
-    "/reference-images",
-    StaticFiles(
-        directory=(
-            "artifacts/data_ingestion/"
-            "brisc2025/brisc2025/"
-            "classification_task/train"
-        )
-    ),
-    name="reference-images"
+reference_images_dir = Path(
+    "artifacts/data_ingestion/"
+    "brisc2025/brisc2025/"
+    "classification_task/train"
 )
 
+if reference_images_dir.is_dir():
+    app.mount(
+        "/reference-images",
+        StaticFiles(directory=str(reference_images_dir)),
+        name="reference-images"
+    )
 
 config_manager = ConfigurationManager()
 
