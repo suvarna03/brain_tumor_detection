@@ -1,289 +1,309 @@
-# Brain Tumor Classification and Similar MRI Retrieval
+# Brain Tumor Classification & MRI Similarity Search
 
-A deep learning computer vision project that classifies brain MRI images into four categories, generates Grad-CAM visual explanations, and retrieves visually similar MRI images using deep feature embeddings.
+A computer vision research project that classifies brain MRI images into four categories, generates Grad-CAM visual explanations, and retrieves visually similar MRI references using deep feature embeddings, PCA, and FAISS.
 
-## Project Overview
+> **Research prototype only.** This system is not intended for clinical diagnosis or treatment decisions.
 
-This project combines a convolutional neural network (CNN), visual explainability, and similarity-based image retrieval in a single application.
+**Tech Stack:** Python • ResNet50 • TensorFlow/Keras • Grad-CAM • PCA • FAISS • FastAPI • Streamlit
 
-Given an MRI image, the system:
+## Application Demo
 
-- Predicts one of four classes: glioma, meningioma, no tumor, or pituitary tumor.
-- Returns the predicted class, confidence score, and class probabilities.
-- Generates a Grad-CAM heatmap to visualize regions contributing to the prediction.
-- Retrieves similar MRI images using deep feature embeddings, PCA, and FAISS.
-- Displays results through a Streamlit application connected to a FastAPI backend.
+### 1. Application Interface
 
-**Important:** This is a research and educational prototype, not a clinically validated medical diagnostic system.
+The Streamlit interface allows users to select sample MRI images or upload an image for analysis.
+
+![Brain Tumor Analysis Interface](docs/screenshots/01_app_interface.png)
+
+### 2. MRI Upload
+
+Users can upload an MRI image and initiate the analysis through the application interface.
+
+![MRI Upload Interface](docs/screenshots/02_mri_upload.png)
+
+### 3. Model Explainability with Grad-CAM
+
+Grad-CAM generates a heatmap that highlights image regions influencing the model's prediction. This provides a visual explanation of the model's behavior.
+
+![Grad-CAM Explanation](docs/screenshots/03_gradcam_explanation.png)
+
+### 4. Classification Results
+
+The fine-tuned ResNet50 model classifies an MRI into one of four categories:
+
+- Glioma
+- Meningioma
+- Pituitary
+- No Tumor
+
+The application displays the predicted class and class-wise probability scores.
+
+![Classification Results](docs/screenshots/04_prediction_results.png)
+
+### 5. Similar MRI Retrieval and Analysis Report
+
+The application retrieves visually similar MRI references using deep feature embeddings, PCA dimensionality reduction, and FAISS similarity search. Users can also download an analysis report.
+
+![Similar MRI Retrieval and Report](docs/screenshots/05_similarity_and_report.png)
 
 ## Key Features
 
-- Four-class brain MRI classification using ResNet50.
-- Transfer learning and fine-tuning with TensorFlow/Keras.
-- Grad-CAM model explainability.
-- Deep feature extraction using 2,048-dimensional embeddings.
-- PCA dimensionality reduction to 256 features.
-- Similar-image retrieval using FAISS.
-- REST API built with FastAPI.
-- Interactive application built with Streamlit.
-- Modular pipeline architecture and YAML-based configuration.
-
-## Technology Stack
-
-| Category | Technologies |
-|---|---|
-| Language | Python |
-| Deep learning | TensorFlow, Keras |
-| Image processing | Pillow, NumPy |
-| Dimensionality reduction | PCA, scikit-learn |
-| Similarity retrieval | FAISS |
-| Backend API | FastAPI, Uvicorn |
-| Frontend | Streamlit |
-| Configuration | YAML |
-
-## Dataset
-
-This project uses the BRISC 2025 brain MRI dataset.
-
-**Dataset:** [BRISC 2025 — Kaggle](https://www.kaggle.com/datasets/briscdataset/brisc2025)
-
-The classification task contains four classes:
-
-| Class | Description |
-|---|---|
-| `glioma` | Glioma |
-| `meningioma` | Meningioma |
-| `no_tumor` | No tumor |
-| `pituitary` | Pituitary tumor |
-
-The dataset also includes a segmentation task with MRI images and masks. The classification and similarity-retrieval workflow described here uses the classification images.
-
-Download the dataset from Kaggle and place it in the location expected by `config.yaml`.
-
-## Model Architecture
-
-The classification model uses a fine-tuned ResNet50 backbone with a custom classification head.
-
-The architecture includes:
-
-1. ResNet50 convolutional feature extractor.
-2. Global Average Pooling.
-3. Batch Normalization.
-4. Dense layer with 256 units and ReLU activation.
-5. Dropout.
-6. Four-unit softmax output layer.
-
-The model accepts RGB images resized to 224 × 224 pixels. Preprocessing is embedded in the saved model; therefore, additional image normalization must not be applied before inference.
+- **Four-class MRI classification** using a fine-tuned ResNet50 model.
+- **Transfer learning and fine-tuning** using TensorFlow/Keras.
+- **Class-wise probability scores** for model predictions.
+- **Grad-CAM visualization** for interpreting model predictions.
+- **Deep feature extraction** for MRI image representations.
+- **PCA dimensionality reduction** for feature embeddings.
+- **FAISS similarity search** to retrieve visually similar MRI references.
+- **FastAPI backend** for model inference and related functionality.
+- **Streamlit frontend** for interactive MRI analysis.
+- **Analysis report download** from the application interface.
 
 ## Model Evaluation
 
-The selected fine-tuned model achieved the following results on the evaluated test set.
+The final fine-tuned model was evaluated on a held-out test set of 1,000 MRI images.
 
-| Metric | Result |
+| Metric | Final fine-tuned model |
 |---|---:|
-| Accuracy | 94.6% |
-| Macro F1-score | 0.9496 |
-| Test-set size | 1,000 images |
+| Test samples | 1,000 |
+| Correct predictions | 946 |
+| Incorrect predictions | 54 |
+| Test accuracy | 94.60% |
+| Macro F1-score | 94.96% |
+| Glioma recall | 90.16% |
 
-### Confusion Matrix
+### Baseline vs. Fine-Tuned ResNet50
 
-Class order: `glioma`, `meningioma`, `no_tumor`, `pituitary`.
+| Metric | Frozen ResNet50 baseline | Fine-tuned ResNet50 |
+|---|---:|---:|
+| Test accuracy | 92.40% | 94.60% |
+| Macro F1-score | 93.00% | 94.96% |
+| Glioma recall | 79.53% | 90.16% |
+| Correct test predictions | 924/1,000 | 946/1,000 |
 
-| Actual / Predicted | Glioma | Meningioma | No tumor | Pituitary |
-|---|---:|---:|---:|---:|
-| Glioma | 229 | 22 | 0 | 3 |
-| Meningioma | 10 | 282 | 6 | 8 |
-| No tumor | 0 | 0 | 140 | 0 |
-| Pituitary | 1 | 4 | 0 | 295 |
+The results show improved classification performance and glioma recall after fine-tuning on the evaluated test set.
 
-These metrics represent performance on the evaluated dataset and do not establish clinical effectiveness or generalization to independent clinical populations.
+**Evaluation note:** These results represent performance on the specific test set used in this project. They do not establish clinical validity or guarantee performance on MRI images from other sources.
 
-## Similar MRI Retrieval
+## Technical Architecture
 
-The retrieval pipeline finds images with similar deep feature representations.
+```text
+                 User
+                  |
+                  v
+          Streamlit Web UI
+                  |
+                  v
+             FastAPI API
+                  |
+          Uploaded MRI Image
+                  |
+          +-------+--------+
+          |                |
+          v                v
+   ResNet50 Classifier   Grad-CAM
+          |                |
+          v                v
+   Class Probabilities  Heatmap
+          |
+          v
+   ResNet50 Feature Embeddings
+          |
+          v
+   PCA Dimensionality Reduction
+          |
+          v
+      FAISS Similarity Search
+          |
+          v
+   Similar MRI References
+          |
+          v
+     Analysis Report
+```
 
-### Workflow
+### Component Responsibilities
 
-1. Extract image embeddings using the trained ResNet50 model.
-2. Reduce embedding dimensions from 2,048 to 256 using PCA.
-3. Build a FAISS similarity index from the reduced embeddings.
-4. Extract features from the query image.
-5. Apply the fitted PCA transformation.
-6. Search the FAISS index for the top-k similar images.
-7. Return image metadata and similarity scores.
+| Component | Responsibility |
+|---|---|
+| ResNet50 | MRI classification and deep feature extraction |
+| TensorFlow/Keras | Model training, fine-tuning, and inference |
+| Grad-CAM | Visual explanation of predictions |
+| PCA | Dimensionality reduction of extracted embeddings |
+| FAISS | Similarity search over indexed MRI features |
+| FastAPI | Backend API and inference services |
+| Streamlit | Interactive user interface |
 
-The existing index contains 5,000 image embeddings.
+## Machine Learning Workflow
 
-Similarity scores measure similarity in the learned feature space. They are not class probabilities or diagnostic confidence scores.
+The project follows a structured workflow covering data preparation, model development, evaluation, and application integration.
 
-## Grad-CAM Explainability
+1. Dataset ingestion and organization.
+2. Data validation and schema checks.
+3. Exploratory data analysis.
+4. ResNet50 model preparation and fine-tuning.
+5. Model evaluation and error analysis.
+6. Deep feature extraction for MRI images.
+7. PCA-based feature dimensionality reduction.
+8. FAISS index preparation for similarity search.
+9. FastAPI inference service integration.
+10. Grad-CAM visualization.
+11. Streamlit interface integration.
 
-Grad-CAM generates a heatmap using gradients from the target convolutional layer `conv5_block3_3_conv`.
+The application uses the final inference model:
 
-The heatmap is resized and overlaid on the original MRI image to support visual inspection of the regions influencing the model's selected class score.
+`artifacts/model_trainer/resnet50_finetuned.keras`
 
-Grad-CAM provides a model explanation visualization, not proof that a prediction is medically correct.
+The candidate model is separate and is intended for evaluation and model selection rather than final inference.
 
-## Project Structure
+## Repository Structure
 
-The following tree reflects the source and root-level files identified during project inspection. Artifact and documentation subdirectories are shown at a high level.
+The repository separates configuration, reusable code, pipeline stages, the API, the application interface, and documentation.
 
 ```text
 brain_tumor_detection/
 ├── app.py
-├── config.yaml
-├── setup.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── diagnose_models.py
-├── inspect_features.py
-├── inspect_retrieval_artifacts.py
-├── test.py
 ├── config/
 ├── docs/
+│   └── screenshots/
+│       ├── 01_app_interface.png
+│       ├── 02_mri_upload.png
+│       ├── 03_gradcam_explanation.png
+│       ├── 04_prediction_results.png
+│       └── 05_similarity_and_report.png
+├── scripts/
+├── src/
+│   └── brain_tumor_detection/
+│       ├── components/
+│       ├── configuration/
+│       ├── constants/
+│       ├── entity/
+│       ├── pipelines/
+│       ├── utils/
+│       └── api/
+│           └── main.py
 ├── research/
-├── artifacts/
-├── logs/
-└── src/
-    └── brain_tumor_detection/
-        ├── api/
-        │   └── main.py
-        ├── components/
-        │   ├── data_ingestion.py
-        │   ├── data_validation.py
-        │   ├── feature_extractor.py
-        │   ├── gradcam.py
-        │   ├── model_inference.py
-        │   ├── model_trainer.py
-        │   ├── pca_transformer.py
-        │   ├── query_feature_extractor.py
-        │   ├── query_pca.py
-        │   ├── report_generator.py
-        │   ├── retrieval_evaluator.py
-        │   └── similarity_search.py
-        ├── config/
-        ├── constants/
-        ├── entity/
-        ├── exception/
-        ├── logger/
-        ├── pipelines/
-        │   ├── stage_01_data_ingestion.py
-        │   ├── stage_02_data_validation.py
-        │   ├── stage_03_model_training.py
-        │   ├── stage_04_model_inference.py
-        │   ├── stage_05_feature_extraction.py
-        │   ├── stage_06_pca.py
-        │   ├── stage_07_similarity_search.py
-        │   ├── stage_08_query_similarity.py
-        │   ├── stage_09_retrieval_evaluation.py
-        │   ├── stage_10_combined_inference.py
-        │   ├── stage_11_candidate_evaluation.py
-        │   ├── test_gradcam.py
-        │   └── test_service.py
-        ├── services/
-        │   └── inference_service.py
-        └── utils/
-            └── common.py
+├── requirements.txt
+├── .gitignore
+├── .python-version
+└── README.md
 ```
 
-## Installation and Setup
+*This is a high-level representation. The repository may contain additional modules and files within these directories.*
+
+## Local Setup
+
+### Prerequisites
+
+- Python 3.11
+- Git
+- Required project dependencies
+- Model artifacts and reference MRI data for the complete application workflow
 
 ### 1. Clone the repository
 
 ```bash
-git clone <your-github-repository-url>
+git clone https://github.com/suvarna03/brain_tumor_detection.git
 cd brain_tumor_detection
 ```
 
 ### 2. Create and activate a virtual environment
 
-Windows PowerShell:
+For Windows:
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+```bash
+py -3.11 -m venv .venv
+.venv\Scripts\activate
 ```
 
 ### 3. Install dependencies
 
 ```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Prepare the dataset and model artifacts
+### 4. Prepare the required artifacts
 
-Ensure the dataset and required inference artifacts exist at the paths specified in `config.yaml`.
+The trained model and supporting artifacts must be available in the expected project directories.
 
-The inference application requires the trained model, PCA transformation, FAISS index, and retrieval metadata. These artifacts must be generated by the appropriate pipeline stages or obtained from the project's published artifact location.
+| Artifact | Purpose |
+|---|---|
+| `artifacts/model_trainer/resnet50_finetuned.keras` | Final classification model |
+| `artifacts/pca/pca.pkl` | Fitted PCA transformation |
+| `artifacts/faiss_index/faiss.index` | FAISS similarity-search index |
+| `artifacts/faiss_index/metadata.pkl` | Metadata for indexed MRI references |
 
-## Running the Application
+The reference MRI images must also be available in the expected data directory for similar-image retrieval and reference-image display.
 
-### Start the FastAPI backend
+### 5. Start the FastAPI backend
 
-Run from the project root:
+Open a terminal in the project root and run:
 
 ```bash
 uvicorn src.brain_tumor_detection.api.main:app --reload
 ```
 
-API documentation is available at:
+The API runs locally at:
 
-- Interactive documentation: `http://127.0.0.1:8000/docs`
-- Health check: `http://127.0.0.1:8000/health`
+`http://127.0.0.1:8000`
 
-### Start the Streamlit application
+Interactive API documentation:
 
-Open a second terminal, activate the virtual environment, and run:
+`http://127.0.0.1:8000/docs`
+
+### 6. Start the Streamlit application
+
+Open a second terminal in the project root, activate the same virtual environment, and run:
 
 ```bash
 streamlit run app.py
 ```
 
-Upload a supported MRI image and run the analysis to view the classification result, confidence, Grad-CAM overlay, and similar MRI images.
+Open the local URL displayed in the terminal, usually:
 
-## API Endpoints
+`http://localhost:8501`
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/` | API information |
-| GET | `/health` | Service health check |
-| POST | `/predict` | Classification, Grad-CAM explanation, and similar-image retrieval |
-| GET | `/docs` | Interactive API documentation |
+Keep the FastAPI backend running while using the Streamlit application.
 
-The `/predict` endpoint accepts an uploaded JPG, JPEG, or PNG image.
+## Application Workflow
 
-## Pipeline Stages
+1. Open the Streamlit interface.
+2. Select a sample MRI image or upload an image.
+3. Run the analysis.
+4. Review the predicted class and probability scores.
+5. Inspect the Grad-CAM visualization.
+6. Review the retrieved similar MRI references.
+7. Download the analysis report.
 
-The project includes pipeline scripts for:
+## Limitations and Responsible Use
 
-1. Data ingestion
-2. Data validation
-3. Model training
-4. Model inference
-5. Feature extraction
-6. PCA dimensionality reduction
-7. Similarity-index creation
-8. Query similarity search
-9. Retrieval evaluation
-10. Combined inference
-11. Candidate-model evaluation
-
-The Streamlit application uses the existing inference artifacts; it does not retrain the model for each prediction.
-
-## Limitations
-
-- Classification predictions may be incorrect.
-- Grad-CAM visualizations do not establish prediction correctness.
-- Similar-image retrieval does not confirm a diagnosis.
-- Results on the evaluated dataset may not generalize to independent clinical populations.
-- This application is not intended for clinical diagnosis or medical decision-making.
+- This is an educational and research prototype, not a clinically validated diagnostic system.
+- Model predictions and probability scores should not be interpreted as medical certainty.
+- Grad-CAM highlights regions influencing the model's output; it does not prove that a highlighted region contains a tumor.
+- Similarity search identifies visually similar reference images and does not establish clinical equivalence.
+- Test-set performance may not generalize to MRI images from different scanners, institutions, or populations.
+- The complete application requires the appropriate model artifacts and reference data to be available locally.
+- Dataset usage and redistribution must comply with the original dataset's licence and terms.
 
 ## Future Improvements
 
-- Automated testing for API inputs and inference behavior.
-- Model and artifact version tracking.
-- Experiment tracking and reproducible evaluation.
-- Additional retrieval-specific evaluation metrics.
-- Testing on independent datasets.
-- Deployment monitoring and security hardening.
+- Automated tests for API endpoints and inference workflows.
+- Additional robustness evaluation across MRI data sources.
+- Inference latency and resource-usage benchmarking.
+- Improved artifact versioning and reproducibility.
+- Optional public demonstration hosting, subject to suitable free-tier availability.
+
+## Acknowledgements
+
+This project uses the BRISC 2025 brain MRI dataset. Please refer to the original dataset source for its documentation, licence, and permitted use.
+
+## Author
+
+**Suvarna Gawali**
+
+- GitHub: [@suvarna03](https://github.com/suvarna03)
+- Project repository: [brain_tumor_detection](https://github.com/suvarna03/brain_tumor_detection)
+
+---
+
+> **Research prototype only.** This system is not intended for clinical diagnosis or treatment decisions.
